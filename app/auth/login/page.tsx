@@ -1,10 +1,9 @@
-import { LoginForm } from "@/components/login-form";
-
-export default function Page() {
+export default function LoginPage() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <LoginForm />
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-center mb-8">Sign In</h1>
+        <p className="text-center text-gray-600">Login page coming soon...</p>
       </div>
     </div>
   );
