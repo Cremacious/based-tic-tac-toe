@@ -1,33 +1,42 @@
-import { getCurrentUser } from '@/lib/server/auth.actions';
+// import { getCurrentUser } from '@/lib/server/auth.actions';
 import Link from 'next/link';
-import SignOutButton from '@/components/SignOutButton';
+import { Button } from '@/components/ui/button';
 
-const DashboardPage = async () => {
-  const user = await getCurrentUser();
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-        <p className="text-red-500">You must be signed in to view this page.</p>
-      </div>
-    );
-  }
+const DashboardPage = () => {
+  // const user = await getCurrentUser();
+  // if (!user) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  //       <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+  //       <p className="text-red-500">You must be signed in to view this page.</p>
+  //     </div>
+  //   );
+  // }
   return (
-    <>
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your dashboard!</p>
-        <p className="text-gray-600">
-          This page will display your game statistics and other relevant
-          information. <Link href="/dashboard">Dashboard</Link>
-        </p>
-        {user.email}
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-green-500 p-8 rounded-xl shadow-lg w-80 h-96 flex flex-col justify-center items-center space-y-6">
+        <h2 className="text-2xl font-bold text-white mb-4">Tic Tac Toe</h2>
+        <Button
+          asChild
+          className="bg-white text-slate-800 px-6 py-3 rounded-lg font-semibold w-48 hover:bg-gray-50 transition-colors"
+        >
+          <Link href="/new-game">New Game</Link>
+        </Button>
+        <Button
+          asChild
+          className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold w-48 hover:bg-green-700 transition-colors"
+        >
+          <Link href="/game">Join Game</Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          className=" text-slate-800 px-6 py-3 rounded-lg font-semibold w-48"
+        >
+          <Link href="/stats">View Stats</Link>
+        </Button>
       </div>
-      <Link href="/game">Game</Link>
-      <div className="mt-4">
-        <SignOutButton />
-      </div>
-    </>
+    </div>
   );
 };
 

@@ -18,6 +18,9 @@ const Homepage = () => {
         <Link href="/auth/login" className="text-blue-500 hover:underline">
           Sign In
         </Link>
+        <Link href="/dashboard" className="text-blue-500 hover:underline ml-2">
+          Dashboard
+        </Link>
       </p>
     </>
   );
