@@ -1,4 +1,6 @@
 import { getCurrentUser } from '@/lib/server/auth.actions';
+import Link from 'next/link';
+import SignOutButton from '@/components/SignOutButton';
 
 const DashboardPage = async () => {
   const user = await getCurrentUser();
@@ -17,9 +19,13 @@ const DashboardPage = async () => {
         <p className="text-gray-600">Welcome to your dashboard!</p>
         <p className="text-gray-600">
           This page will display your game statistics and other relevant
-          information.
+          information. <Link href="/dashboard">Dashboard</Link>
         </p>
         {user.email}
+      </div>
+      <Link href="/game">Game</Link>
+      <div className="mt-4">
+        <SignOutButton />
       </div>
     </>
   );
