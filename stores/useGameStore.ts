@@ -111,6 +111,7 @@ const useGameStore = create<GameState>((set, get) => ({
       gameResult: gameData.result as GameResult,
       playerSymbol,
       isMyTurn,
+      roomId: gameData.roomId || state.roomId, // Ensure roomId is set
       opponentId:
         playerSymbol === 'X' ? gameData.playerOId : gameData.playerXId,
     });

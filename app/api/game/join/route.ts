@@ -5,6 +5,11 @@ export async function POST(request: NextRequest) {
   try {
     const { roomId, playerId } = await request.json();
 
+    // Generate playerId if not provided (for backwards compatibility)
+    const finalPlayerId =
+      playerId ||
+      `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     const game = await prisma.game.findUnique({
       where: { roomId },
     });
@@ -22,7 +27,7 @@ export async function POST(request: NextRequest) {
     const updatedGame = await prisma.game.update({
       where: { roomId },
       data: {
-        playerOId: playerId,
+        playerOId: finalPlayerId,
         status: 'playing',
         currentTurn: randomStart ? 'X' : 'O',
       },

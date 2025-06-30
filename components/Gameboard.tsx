@@ -41,7 +41,7 @@ const GameBoard = () => {
     <div className="min-h-screen flex flex-col justify-center items-center space-y-4">
       <div className="text-center space-y-2">
         <p className="text-lg font-semibold">{getStatusMessage()}</p>
-        <p className="text-sm text-gray-600">Room ID: {roomId}</p>
+        <p className="text-sm text-green-500">Room ID: {roomId}</p>
         {playerSymbol && (
           <p className="text-sm text-gray-600">You are: {playerSymbol}</p>
         )}
