@@ -23,8 +23,8 @@ interface GameState {
   clearRoomId: () => void;
   setPlayerId: (playerId: string) => void;
   makeMove: (index: number) => Promise<void>;
-  resetGame: () => void;
-  newGame: () => void;
+  resetGame: () => Promise<void>;
+  newGame: () => Promise<void>;
   joinRoom: (roomId: string, playerId: string) => Promise<boolean>;
   leaveRoom: () => void;
   syncGameState: (gameData: any) => void;
@@ -132,24 +132,34 @@ const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
-  resetGame: () => {
-    set({
-      board: Array(9).fill(null),
-      currentPlayer: 'X',
-      gameStatus: 'playing',
-      winner: null,
-      gameResult: null,
-    });
+  resetGame: async () => {
+    const state = get();
+    if (!state.roomId || !state.playerId) return;
+
+    try {
+      const response = await fetch('/api/game/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: state.roomId,
+          playerId: state.playerId,
+        }),
+      });
+
+      if (response.ok) {
+        const gameData = await response.json();
+        get().syncGameState(gameData);
+      } else {
+        console.error('Failed to reset game');
+      }
+    } catch (error) {
+      console.error('Failed to reset game:', error);
+    }
   },
 
-  newGame: () => {
-    set({
-      board: Array(9).fill(null),
-      currentPlayer: 'X',
-      gameStatus: 'playing',
-      winner: null,
-      gameResult: null,
-    });
+  newGame: async () => {
+    // For new game, redirect to dashboard to create a new room
+    window.location.href = '/dashboard';
   },
 
   leaveRoom: () => {

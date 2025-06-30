@@ -32,7 +32,13 @@ const GameBoard = () => {
       return isMyTurn ? 'Your turn!' : `Opponent's turn (${currentPlayer})`;
     }
     if (gameStatus === 'finished') {
-      return 'Game finished!';
+      const { gameResult, winner } = useGameStore.getState();
+      if (gameResult === 'win' && winner) {
+        return `Game Over! ${winner} wins!`;
+      } else if (gameResult === 'draw') {
+        return "Game Over! It's a draw!";
+      }
+      return 'Game finished! Use Reset to play again.';
     }
     return '';
   };
