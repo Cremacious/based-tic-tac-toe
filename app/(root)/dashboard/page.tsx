@@ -1,6 +1,7 @@
 // import { getCurrentUser } from '@/lib/server/auth.actions';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import NewGameButton from '@/components/NewGameButton';
 
 const DashboardPage = () => {
   // const user = await getCurrentUser();
@@ -16,12 +17,7 @@ const DashboardPage = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-green-500 p-8 rounded-xl shadow-lg w-80 h-96 flex flex-col justify-center items-center space-y-6">
         <h2 className="text-2xl font-bold text-white mb-4">Tic Tac Toe</h2>
-        <Button
-          asChild
-          className="bg-white text-slate-800 px-6 py-3 rounded-lg font-semibold w-48 hover:bg-gray-50 transition-colors"
-        >
-          <Link href="/new-game">New Game</Link>
-        </Button>
+        <NewGameButton />
         <Button
           asChild
           className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold w-48 hover:bg-green-700 transition-colors"

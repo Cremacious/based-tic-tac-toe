@@ -6,29 +6,21 @@ type GameStatus = 'waiting' | 'playing' | 'finished';
 type GameResult = 'win' | 'draw' | null;
 
 interface GameState {
-  // Game board (3x3 grid)
   board: Cell[];
-
-  // Game state
   currentPlayer: Player;
   gameStatus: GameStatus;
   winner: Player | null;
   gameResult: GameResult;
-
-  // Game stats
   scores: {
     X: number;
     O: number;
     draws: number;
   };
-
-  // Multiplayer state
-
   playerId: string | null;
   opponentId: string | null;
   roomId: string | null;
-
-  // Actions
+  setRoomId: (roomId: string) => void;
+  clearRoomId: () => void;
   makeMove: (index: number) => void;
   resetGame: () => void;
   newGame: () => void;
@@ -37,10 +29,9 @@ interface GameState {
 }
 
 const useGameStore = create<GameState>((set, get) => ({
-  // Initial state
   board: Array(9).fill(null),
   currentPlayer: 'X',
-  gameStatus: 'waiting',
+  gameStatus: 'playing',
   winner: null,
   gameResult: null,
   scores: { X: 0, O: 0, draws: 0 },
@@ -48,18 +39,17 @@ const useGameStore = create<GameState>((set, get) => ({
   playerId: null,
   opponentId: null,
   roomId: null,
-
-  // Actions
+  setRoomId: (roomId: string) => {
+    set({ roomId });
+  },
+  clearRoomId: () => {
+    set({ roomId: null });
+  },
   makeMove: (index: number) => {
     const state = get();
-
-    // Validate move
-    if (state.board[index] || state.gameStatus !== 'playing') return;
-
+    // if (state.board[index] || state.gameStatus !== 'playing') return;
     const newBoard = [...state.board];
     newBoard[index] = state.currentPlayer;
-
-    // Check for winner
     const winner = checkWinner(newBoard);
     const isDraw = newBoard.every((cell) => cell !== null) && !winner;
 
@@ -80,17 +70,15 @@ const useGameStore = create<GameState>((set, get) => ({
           : state.scores,
     });
   },
-
   resetGame: () => {
     set({
       board: Array(9).fill(null),
       currentPlayer: 'X',
-      gameStatus: 'waiting',
+      gameStatus: 'playing',
       winner: null,
       gameResult: null,
     });
   },
-
   newGame: () => {
     set({
       board: Array(9).fill(null),
@@ -100,8 +88,6 @@ const useGameStore = create<GameState>((set, get) => ({
       gameResult: null,
     });
   },
-
-
   joinRoom: (roomId: string, playerId: string) => {
     set({
       roomId,
@@ -109,7 +95,6 @@ const useGameStore = create<GameState>((set, get) => ({
       gameStatus: 'waiting',
     });
   },
-
   leaveRoom: () => {
     set({
       roomId: null,
@@ -120,17 +105,16 @@ const useGameStore = create<GameState>((set, get) => ({
   },
 }));
 
-// Helper function to check winner
 function checkWinner(board: Cell[]): Player | null {
   const winningCombinations = [
     [0, 1, 2],
     [3, 4, 5],
-    [6, 7, 8], 
+    [6, 7, 8],
     [0, 3, 6],
     [1, 4, 7],
-    [2, 5, 8], 
+    [2, 5, 8],
     [0, 4, 8],
-    [2, 4, 6], 
+    [2, 4, 6],
   ];
 
   for (const [a, b, c] of winningCombinations) {
