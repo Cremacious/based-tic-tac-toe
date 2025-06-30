@@ -1,0 +1,13 @@
+# Prisma generated files
+lib/generated/
+lib/generated/**/*
+
+# Next.js build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env*

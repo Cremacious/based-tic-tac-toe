@@ -14,14 +14,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Add these new models to your existing schema:
+
+model Game {
+  id          String   @id @default(cuid())
+  roomId      String   @unique
+  playerXId   String?
+  playerOId   String?
+  board       String   @default("000000000") // Store as string of 9 characters
+  currentTurn String   @default("X")
+  status      String   @default("waiting") // waiting, playing, finished
+  winner      String?
+  result      String?  // win, draw
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Update User model to include game relationships:
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String
-  scoreId   String?  @unique
-  score     Score?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  email      String   @unique
+  username   String
+  scoreId    String?  @unique
+  score      Score?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Score {

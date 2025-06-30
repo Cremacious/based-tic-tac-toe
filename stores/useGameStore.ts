@@ -11,65 +11,126 @@ interface GameState {
   gameStatus: GameStatus;
   winner: Player | null;
   gameResult: GameResult;
-  scores: {
-    X: number;
-    O: number;
-    draws: number;
-  };
+  scores: { X: number; O: number; draws: number };
   playerId: string | null;
   opponentId: string | null;
   roomId: string | null;
+  playerSymbol: Player | null; // What symbol this player is (X or O)
+  isMyTurn: boolean;
+
+  // Actions
   setRoomId: (roomId: string) => void;
   clearRoomId: () => void;
-  makeMove: (index: number) => void;
+  setPlayerId: (playerId: string) => void;
+  makeMove: (index: number) => Promise<void>;
   resetGame: () => void;
   newGame: () => void;
-  joinRoom: (roomId: string, playerId: string) => void;
+  joinRoom: (roomId: string, playerId: string) => Promise<boolean>;
   leaveRoom: () => void;
+  syncGameState: (gameData: any) => void;
+  pollGameState: () => Promise<void>;
 }
 
 const useGameStore = create<GameState>((set, get) => ({
   board: Array(9).fill(null),
   currentPlayer: 'X',
-  gameStatus: 'playing',
+  gameStatus: 'waiting',
   winner: null,
   gameResult: null,
   scores: { X: 0, O: 0, draws: 0 },
-  isMultiplayer: false,
   playerId: null,
   opponentId: null,
   roomId: null,
-  setRoomId: (roomId: string) => {
-    set({ roomId });
-  },
-  clearRoomId: () => {
-    set({ roomId: null });
-  },
-  makeMove: (index: number) => {
+  playerSymbol: null,
+  isMyTurn: false,
+
+  setRoomId: (roomId: string) => set({ roomId }),
+  clearRoomId: () => set({ roomId: null }),
+  setPlayerId: (playerId: string) => set({ playerId }),
+
+  makeMove: async (index: number) => {
     const state = get();
-    // if (state.board[index] || state.gameStatus !== 'playing') return;
-    const newBoard = [...state.board];
-    newBoard[index] = state.currentPlayer;
-    const winner = checkWinner(newBoard);
-    const isDraw = newBoard.every((cell) => cell !== null) && !winner;
+    if (!state.isMyTurn || state.board[index] || state.gameStatus !== 'playing')
+      return;
+
+    try {
+      const response = await fetch('/api/game/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: state.roomId,
+          playerId: state.playerId,
+          position: index,
+        }),
+      });
+
+      if (response.ok) {
+        const gameData = await response.json();
+        get().syncGameState(gameData);
+      }
+    } catch (error) {
+      console.error('Failed to make move:', error);
+    }
+  },
+
+  joinRoom: async (roomId: string, playerId: string) => {
+    try {
+      const response = await fetch('/api/game/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, playerId }),
+      });
+
+      if (response.ok) {
+        const gameData = await response.json();
+        get().syncGameState(gameData);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to join room:', error);
+      return false;
+    }
+  },
+
+  syncGameState: (gameData: any) => {
+    const state = get();
+    const board = gameData.board
+      .split('')
+      .map((cell: string) => (cell === '0' ? null : (cell as Player)));
+
+    const playerSymbol = gameData.playerXId === state.playerId ? 'X' : 'O';
+    const isMyTurn =
+      gameData.currentTurn === playerSymbol && gameData.status === 'playing';
 
     set({
-      board: newBoard,
-      currentPlayer: state.currentPlayer === 'X' ? 'O' : 'X',
-      winner,
-      gameResult: winner ? 'win' : isDraw ? 'draw' : null,
-      gameStatus: winner || isDraw ? 'finished' : 'playing',
-      scores:
-        winner || isDraw
-          ? {
-              ...state.scores,
-              [winner || 'draws']: winner
-                ? state.scores[winner] + 1
-                : state.scores.draws + 1,
-            }
-          : state.scores,
+      board,
+      currentPlayer: gameData.currentTurn as Player,
+      gameStatus: gameData.status as GameStatus,
+      winner: gameData.winner as Player | null,
+      gameResult: gameData.result as GameResult,
+      playerSymbol,
+      isMyTurn,
+      opponentId:
+        playerSymbol === 'X' ? gameData.playerOId : gameData.playerXId,
     });
   },
+
+  pollGameState: async () => {
+    const state = get();
+    if (!state.roomId) return;
+
+    try {
+      const response = await fetch(`/api/game/${state.roomId}`);
+      if (response.ok) {
+        const gameData = await response.json();
+        get().syncGameState(gameData);
+      }
+    } catch (error) {
+      console.error('Failed to poll game state:', error);
+    }
+  },
+
   resetGame: () => {
     set({
       board: Array(9).fill(null),
@@ -79,6 +140,7 @@ const useGameStore = create<GameState>((set, get) => ({
       gameResult: null,
     });
   },
+
   newGame: () => {
     set({
       board: Array(9).fill(null),
@@ -88,42 +150,17 @@ const useGameStore = create<GameState>((set, get) => ({
       gameResult: null,
     });
   },
-  joinRoom: (roomId: string, playerId: string) => {
-    set({
-      roomId,
-      playerId,
-      gameStatus: 'waiting',
-    });
-  },
+
   leaveRoom: () => {
     set({
       roomId: null,
       playerId: null,
       opponentId: null,
       gameStatus: 'waiting',
+      playerSymbol: null,
+      isMyTurn: false,
     });
   },
 }));
-
-function checkWinner(board: Cell[]): Player | null {
-  const winningCombinations = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-
-  for (const [a, b, c] of winningCombinations) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a];
-    }
-  }
-
-  return null;
-}
 
 export default useGameStore;

@@ -4,7 +4,7 @@ import GameControls from '@/components/GameControls';
 const GamePage = () => {
   return (
     <>
-      {} Game board page
+      {/* Game board page */}
       <GameBoard />
       <GameControls />
     </>
